@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoMidasAPI.Data;
 using ProjetoMidasAPI.Models;
 using ProjetoMidasAPI.Services;
+using ProjetoMidasAPI.DTOs.Projecoes;
 
 namespace ProjetoMidasAPI.Controllers
 {
@@ -90,6 +91,8 @@ namespace ProjetoMidasAPI.Controllers
 
             existente.ValorPrevisto = projecao.ValorPrevisto;
             existente.DataReferencia = projecao.DataReferencia;
+            existente.CategoriaGasto = projecao.CategoriaGasto;
+            existente.Titulo = projecao.Titulo;
 
             await _context.SaveChangesAsync();
 
@@ -218,6 +221,28 @@ namespace ProjetoMidasAPI.Controllers
                     pontosFortes = resultado.PontosFortes,
                     pontosAtencao = resultado.PontosAtencao,
                     dataAnalise = DateTime.UtcNow.ToString("o")
+                });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { sucesso = false, mensagem = "Projeção não encontrada" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { sucesso = false, mensagem = ex.Message });
+            }
+        }
+
+        [HttpPost("chat-ia/{id}")]
+        public async Task<ActionResult<object>> ChatIA(int id, [FromBody] ChatIAPerguntaDto dto)
+        {
+            try
+            {
+                var resultado = await _analiseIAService.ChatComProjecao(id, UserId, dto.Pergunta);
+                return Ok(new
+                {
+                    sucesso = true,
+                    analise = resultado
                 });
             }
             catch (KeyNotFoundException)

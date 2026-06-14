@@ -25,8 +25,7 @@ namespace ProjetoMidasAPI.Dtos.Lancamentos
 
         public DateTime Data { get; set; }
         
-        [MaxLength(60)]
-        public string Category { get; set; } = string.Empty;
+        public CategoriaGastoEnum? CategoriaGasto { get; set; }
 
         public RecorrenciaDto? Recorrencia { get; set; }
     }

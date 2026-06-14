@@ -109,6 +109,7 @@ namespace ProjetoMidasAPI.Services
                 Valor = novoLancamento.Valor,
                 Data = novoLancamento.Data,
                 StatusTransacao = novoLancamento.StatusTransacao,
+                CategoriaGasto = novoLancamento.CategoriaGasto,
                 DataCriacao = DateTime.UtcNow
             };
 

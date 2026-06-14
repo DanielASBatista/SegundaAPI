@@ -91,6 +91,8 @@ namespace ProjetoMidasAPI.Controllers
             lancamentoExistente.Valor = lancamento.Valor;
             lancamentoExistente.Data = lancamento.Data;
             lancamentoExistente.DescricaoLancamento = lancamento.DescricaoLancamento;
+            lancamentoExistente.CategoriaGasto = lancamento.CategoriaGasto;
+            lancamentoExistente.TipoLancamento = lancamento.TipoLancamento;
 
             await _context.SaveChangesAsync();
 

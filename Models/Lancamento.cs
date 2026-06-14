@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MidasApi.Models.Enuns;
 using ProjetoMidasAPI.Models.Enuns;
 using System.Text.Json.Serialization;
 using MidasApi.Models.Enuns;
@@ -30,6 +31,8 @@ public class Lancamento
     public FrequenciaRecorrencia? FrequenciaRecorrencia { get; set; } // Identifica a frequência de recorrência do lançamento dentro das categorias pré estabelecidas. Se for preenchida significa que o lançamento é oriundo de recorrência programada pelo usuário
 
     public ModoRecorrenciaMensal? ModoRecorrenciaMensal { get; set; } // Identifica o modo de recorrência mensal do lançamento dentro das categorias pré estabelecidas. Se for preenchida significa que o lançamento é oriundo de recorrência programada pelo usuário com frequência mensal
+
+    public CategoriaGastoEnum? CategoriaGasto { get; set; } // Categoria de gasto associada ao lançamento (Alimentação, Moradia, etc.)
 
     public StatusTransacao? StatusTransacao { get; set; } // Identifica o status da transação do lançamento dentro das categorias pré estabelecidas. Se for preenchida significa que o lançamento é oriundo de simulação de empréstimo ou projeção confirmada no sistema
     

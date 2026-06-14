@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using MidasApi.Models.Enuns;
 
 public class Emprestimo
 {
@@ -43,6 +44,8 @@ public class Emprestimo
     public DateTime Data { get; set; } = DateTime.UtcNow;
     public DateTime DataCriacaoSE { get; set; } = DateTime.UtcNow;
     public int? UsuarioResponsavel { get; set; }
+
+    public CategoriaGastoEnum? CategoriaGasto { get; set; } // Categoria de gasto associada ao empréstimo
 
     // Propriedade calculada para ValorTotal
     [NotMapped]

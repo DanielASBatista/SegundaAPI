@@ -85,6 +85,7 @@ namespace ProjetoMidasAPI.Controllers
             emprestimo.despesasEmprestimo = emprestimoAtualizado.despesasEmprestimo;
             emprestimo.tarifasEmprestimo = emprestimoAtualizado.tarifasEmprestimo;
             emprestimo.Data = emprestimoAtualizado.Data;
+            emprestimo.CategoriaGasto = emprestimoAtualizado.CategoriaGasto;
 
             emprestimo.CalcularValores();
 

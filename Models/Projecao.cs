@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 
+using MidasApi.Models.Enuns;
+
 namespace ProjetoMidasAPI.Models
 {
     public class Projecao
@@ -33,5 +35,7 @@ namespace ProjetoMidasAPI.Models
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Data/hora de criação, campo de busca e será inserido automaticamente a do sistema
     
         public int? UsuarioResponsavel {get; set;}
+
+    public CategoriaGastoEnum? CategoriaGasto { get; set; } // Categoria de gasto associada à projeção
     }
 }
