@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MidasApi.Models.Enuns;
 using ProjetoMidasAPI.Models.Enuns;
 using System.Text.Json.Serialization;
-using MidasApi.Models.Enuns;
 
 public class Lancamento
 {
@@ -38,7 +37,7 @@ public class Lancamento
     
     public int? QtdeRecorrencia { get; set; } // Quantidade de recorrências do lançamento. Se for preenchida significa que o lançamento é oriundo de recorrência programada pelo usuário
     
-    [Required, MaxLength(50)] // Descrição do lançamento. Campo obrigatório, máximo 50 caracteres. Talvez eu mude o nome pra Nome ao invés de descrição
+    [Required, MaxLength(500)] // Descrição do lançamento. Campo obrigatório, máximo 50 caracteres. Talvez eu mude o nome pra Nome ao invés de descrição
     public string DescricaoLancamento { get; set; } = string.Empty;
 
     [MaxLength(200)] // Campo opcional para observações a respeito do lançamento, máximo 200 caracteres

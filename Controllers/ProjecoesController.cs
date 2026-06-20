@@ -6,6 +6,8 @@ using ProjetoMidasAPI.Data;
 using ProjetoMidasAPI.Models;
 using ProjetoMidasAPI.Services;
 using ProjetoMidasAPI.DTOs.Projecoes;
+using ProjetoMidasAPI.Models.Enuns;
+using MidasApi.Models.Enuns;
 
 namespace ProjetoMidasAPI.Controllers
 {
@@ -204,6 +206,55 @@ namespace ProjetoMidasAPI.Controllers
             return await QueryUsuario()
                 .Where(p => p.ValorPrevisto > valor)
                 .ToListAsync();
+        }
+
+        // =========================
+        // CONFIRMAR PROJEÇÃO (vira lançamento)
+        // =========================
+        // CONFIRMAR PROJEÇÃO (vira lançamento)
+        // =========================
+        [HttpPost("{id}/confirmar")]
+        public async Task<ActionResult<object>> ConfirmarProjecao(int id, [FromBody] ConfirmarProjecaoDto dadosAlterados)
+        {
+            var projecao = await QueryUsuario()
+                .FirstOrDefaultAsync(p => p.IdProjecao == id);
+
+            if (projecao == null)
+                return NotFound(new { sucesso = false, mensagem = "Projeção não encontrada" });
+
+            // Define os dados do lançamento
+            var descricao = dadosAlterados?.Descricao ?? projecao.Titulo;
+            var valor = dadosAlterados?.Valor ?? projecao.ValorPrevisto;
+            var data = dadosAlterados?.Data ?? projecao.DataReferencia;
+            var tipoLancamento = dadosAlterados?.TipoLancamento ?? TipoLancamentoEnum.Despesa;
+            var categoriaGasto = dadosAlterados?.CategoriaGasto ?? projecao.CategoriaGasto;
+
+            var lancamento = new Lancamento
+            {
+                IdUsuario = UserId,
+                IdProjecao = projecao.IdProjecao,
+                DescricaoLancamento = descricao,
+                Valor = valor,
+                Data = data,
+                TipoLancamento = tipoLancamento,
+                CategoriaGasto = categoriaGasto,
+                StatusTransacao = StatusTransacao.Confirmada,
+                DataCriacao = DateTime.UtcNow
+            };
+
+            _context.Lancamentos.Add(lancamento);
+
+            // Remove a projeção original
+            _context.Projecoes.Remove(projecao);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                sucesso = true,
+                mensagem = "Projeção confirmada e convertida em lançamento com sucesso!",
+                idLancamento = lancamento.IdLancamento
+            });
         }
 
         // Análise com IA

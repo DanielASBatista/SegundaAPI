@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoMidasAPI.Data;
 using ProjetoMidasAPI.Services;
 using System.Security.Claims;
+using MidasApi.Models.Enuns;
 using ProjetoMidasAPI.Dtos.Lancamentos;
 using ProjetoMidasAPI.Models.Enuns;
 
@@ -32,15 +33,19 @@ namespace ProjetoMidasAPI.Controllers
             return user?.IdEmpresa > 0 ? user.IdEmpresa : null;
         }
 
-        // READ - Lista todos os lançamentos
+        // READ - Lista todos os lançamentos (DEBUG: ignorando filtro)
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetAll()
         {
             var idUsuario = GetUserId();
+            System.Console.WriteLine($"[DEBUG GetAll] IdUsuario={idUsuario}");
 
-            return await _context.Lancamentos
+            var lancamentos = await _context.Lancamentos
                 .Where(l => l.IdUsuario == idUsuario)
                 .ToListAsync();
+
+            System.Console.WriteLine($"[DEBUG GetAll] Encontrou {lancamentos.Count} registros");
+            return lancamentos;
         }
 
         // READ - Busca por ID
@@ -71,7 +76,52 @@ namespace ProjetoMidasAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = lancamentosCriados.First().IdLancamento }, lancamentosCriados);
         }
 
-        // UPDATE - Atualiza lançamento existente
+        // UPDATE (parcial) - Atualiza campos específicos do lançamento
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> Patch(int id, [FromBody] ProjetoMidasAPI.Dtos.Lancamentos.PatchLancamentoDto patch)
+        {
+            if (patch == null)
+                return BadRequest();
+
+            var idUsuario = GetUserId();
+
+            var lancamento = await _context.Lancamentos
+                .FirstOrDefaultAsync(l => l.IdLancamento == id
+                                       && l.IdUsuario == idUsuario);
+
+            if (lancamento == null)
+                return NotFound();
+
+            // Atualiza apenas os campos que vieram preenchidos
+            if (patch.DescricaoLancamento != null)
+                lancamento.DescricaoLancamento = patch.DescricaoLancamento;
+
+            if (patch.Valor.HasValue)
+                lancamento.Valor = patch.Valor.Value;
+
+            if (patch.TipoLancamento.HasValue)
+                lancamento.TipoLancamento = patch.TipoLancamento.Value == 0 ? TipoLancamentoEnum.Receita : TipoLancamentoEnum.Despesa;
+
+            if (patch.Data.HasValue)
+                lancamento.Data = patch.Data.Value;
+
+            if (patch.CategoriaGasto.HasValue)
+                lancamento.CategoriaGasto = (CategoriaGastoEnum)patch.CategoriaGasto.Value;
+            else if (patch.CategoriaGasto == null && patch.GetType().GetProperty(nameof(patch.CategoriaGasto))?.GetValue(patch) == null)
+            {
+                // null = não alterar, mas se explicitamente null, quer remover
+                // (PatchLancamentoDto usa Nullable<int?>, então null padrão = não alterar)
+            }
+
+            if (patch.ObservacaoLancamento != null)
+                lancamento.ObservacaoLancamento = patch.ObservacaoLancamento;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // UPDATE - Atualiza lançamento existente (completo)
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, Lancamento lancamento)
         {
@@ -272,6 +322,52 @@ namespace ProjetoMidasAPI.Controllers
                 totalDespesas,
                 saldo = totalReceitas - totalDespesas
             });
+        }
+
+        // IMPORTAR EM LOTE - Recebe array de lançamentos e salva todos
+        [HttpPost("Importar")]
+        public async Task<ActionResult<object>> Importar([FromBody] ImportarLancamentoRequestDto request)
+        {
+            if (request == null || request.Lancamentos == null || request.Lancamentos.Count == 0)
+                return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento para importar." });
+
+            var idUsuario = GetUserId();
+            var dataCriacao = DateTime.UtcNow;
+            var entidades = new List<Lancamento>();
+
+            System.Console.WriteLine($"[DEBUG Importar] IdUsuario={idUsuario}, {request.Lancamentos.Count} itens recebidos");
+
+            foreach (var item in request.Lancamentos)
+            {
+                if (string.IsNullOrWhiteSpace(item.DescricaoLancamento))
+                    continue;
+
+                var descricao = item.DescricaoLancamento;
+                if (descricao.Length > 120)
+                    descricao = descricao[..120];
+
+                var tipo = item.TipoLancamento == 0 ? TipoLancamentoEnum.Receita : TipoLancamentoEnum.Despesa;
+
+                entidades.Add(new Lancamento
+                {
+                    IdUsuario = idUsuario,
+                    TipoLancamento = tipo,
+                    DescricaoLancamento = descricao,
+                    Valor = item.Valor,
+                    Data = item.Data,
+                    DataCriacao = dataCriacao,
+                    CategoriaGasto = item.CategoriaGasto.HasValue ? (CategoriaGastoEnum)item.CategoriaGasto.Value : null,
+                    StatusTransacao = MidasApi.Models.Enuns.StatusTransacao.Confirmada,
+                });
+            }
+
+            if (entidades.Count == 0)
+                return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento válido para importar." });
+
+            _context.Lancamentos.AddRange(entidades);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { importados = entidades.Count });
         }
 
         // Comparação (maior que valor informado)

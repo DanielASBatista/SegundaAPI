@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using ProjetoMidasAPI.Dtos.Usuarios;
+using ProjetoMidasAPI.Models;
 using ProjetoMidasAPI.Models.Enuns;
 
 namespace ProjetoMidasAPI.Controllers
@@ -153,26 +154,87 @@ namespace ProjetoMidasAPI.Controllers
             }
         }
         [HttpPut("AlterarSenha")]
-        public async Task<IActionResult> AlterarSenhaUsuario(Usuario credenciais)
+        public async Task<IActionResult> AlterarSenhaUsuario(AlterarSenhaDto dto)
         {
             try
             {
-                Usuario? usuario = await _context.Usuarios //Busca o usuário no banco através do login
-                .FirstOrDefaultAsync(U => U.nomeUsuario.ToLower().Equals(credenciais.nomeUsuario.ToLower()));
+                var usuario = await GetUsuarioLogado();
+                if (usuario == null)
+                    return Unauthorized();
 
-                if (usuario == null) // Se o usuário não for encontrado, lança uma exceção
-                    throw new System.Exception("Usuário não encontrado.");
-                    Criptografia.CriarPasswordHash(credenciais.PasswordString, out byte[] hash, out byte[] salt);
-                    usuario.PasswordHash = hash; //Se o usuário existir, executa a criptografia
-                    usuario.PasswordSalt = salt; //Atualiza o hash e o salt no banco
-                        
-                    _context.Usuarios.Update(usuario);
-                    int linhasAfetadas = await _context.SaveChangesAsync(); // Cponfirma a alteração no banco
-                    return Ok(linhasAfetadas); //Retorna o número de linhas afetadas (Geralmente sempre tem 1 linha msm)
+                if (usuario.PasswordHash == null || usuario.PasswordSalt == null)
+                    return BadRequest("Erro ao verificar senha atual.");
+
+                if (!Criptografia.VerificarPasswordHash(dto.SenhaAtual, usuario.PasswordHash, usuario.PasswordSalt))
+                    return BadRequest("Senha atual incorreta.");
+
+                Criptografia.CriarPasswordHash(dto.NovaSenha, out byte[] hash, out byte[] salt);
+                usuario.PasswordHash = hash;
+                usuario.PasswordSalt = salt;
+
+                await _context.SaveChangesAsync();
+                return Ok(new { mensagem = "Senha alterada com sucesso!" });
             }
             catch (System.Exception ex)
             {
                 return BadRequest($"Erro ao alterar a senha do usuário: {ex.Message}");
+            }
+        }
+
+        [HttpPut("Perfil")]
+        public async Task<IActionResult> AtualizarPerfil(AtualizarPerfilDto dto)
+        {
+            try
+            {
+                var usuario = await GetUsuarioLogado();
+                if (usuario == null)
+                    return Unauthorized();
+
+                if (!string.IsNullOrEmpty(dto.NomeUsuario))
+                    usuario.nomeUsuario = dto.NomeUsuario;
+
+                if (!string.IsNullOrEmpty(dto.Sobrenome))
+                    usuario.sobrenome = dto.Sobrenome;
+
+                if (!string.IsNullOrEmpty(dto.EmailUsuario))
+                    usuario.emailUsuario = dto.EmailUsuario;
+
+                if (!string.IsNullOrEmpty(dto.Telefone))
+                    usuario.telefone = dto.Telefone;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    nomeUsuario = usuario.nomeUsuario,
+                    sobrenome = usuario.sobrenome,
+                    emailUsuario = usuario.emailUsuario,
+                    telefone = usuario.telefone
+                });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest($"Erro ao atualizar perfil: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("Excluir")]
+        public async Task<IActionResult> ExcluirConta()
+        {
+            try
+            {
+                var usuario = await GetUsuarioLogado();
+                if (usuario == null)
+                    return Unauthorized();
+
+                _context.Usuarios.Remove(usuario);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { mensagem = "Conta excluída com sucesso." });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest($"Erro ao excluir conta: {ex.Message}");
             }
         }
         [HttpGet("GetAll")]
