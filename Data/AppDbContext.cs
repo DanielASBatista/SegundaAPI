@@ -81,9 +81,10 @@ namespace ProjetoMidasAPI.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<TipoRecorrencia>().HasData(
-                new TipoRecorrencia { Id = 1, Nome = "Mensal", PadraoSistema = true },
+                new TipoRecorrencia { Id = 1, Nome = "Diária", PadraoSistema = true },
                 new TipoRecorrencia { Id = 2, Nome = "Semanal", PadraoSistema = true },
-                new TipoRecorrencia { Id = 3, Nome = "Anual", PadraoSistema = true }
+                new TipoRecorrencia { Id = 3, Nome = "Mensal", PadraoSistema = true },
+                new TipoRecorrencia { Id = 4, Nome = "Anual", PadraoSistema = true }
             );
             modelBuilder.Entity<Empresa>().HasData(
                 new Empresa { IdEmpresa = 1, idResponsavel = 1, razaoSocial = "Empresa Teste", nomeFantasia = "Teste", telefoneEmp = "123456789", cnpjEmpresa = "12345678901234", emailEmpresa = "empresa@teste.com"}
