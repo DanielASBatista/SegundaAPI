@@ -328,46 +328,59 @@ namespace ProjetoMidasAPI.Controllers
         [HttpPost("Importar")]
         public async Task<ActionResult<object>> Importar([FromBody] ImportarLancamentoRequestDto request)
         {
-            if (request == null || request.Lancamentos == null || request.Lancamentos.Count == 0)
-                return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento para importar." });
-
-            var idUsuario = GetUserId();
-            var dataCriacao = DateTime.UtcNow;
-            var entidades = new List<Lancamento>();
-
-            System.Console.WriteLine($"[DEBUG Importar] IdUsuario={idUsuario}, {request.Lancamentos.Count} itens recebidos");
-
-            foreach (var item in request.Lancamentos)
+            try
             {
-                if (string.IsNullOrWhiteSpace(item.DescricaoLancamento))
-                    continue;
+                if (request == null || request.Lancamentos == null || request.Lancamentos.Count == 0)
+                    return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento para importar." });
 
-                var descricao = item.DescricaoLancamento;
-                if (descricao.Length > 120)
-                    descricao = descricao[..120];
+                var idUsuario = GetUserId();
+                var dataCriacao = DateTime.UtcNow;
+                var entidades = new List<Lancamento>();
 
-                var tipo = item.TipoLancamento == 0 ? TipoLancamentoEnum.Receita : TipoLancamentoEnum.Despesa;
+                System.Console.WriteLine($"[DEBUG Importar] IdUsuario={idUsuario}, {request.Lancamentos.Count} itens recebidos");
 
-                entidades.Add(new Lancamento
+                foreach (var item in request.Lancamentos)
                 {
-                    IdUsuario = idUsuario,
-                    TipoLancamento = tipo,
-                    DescricaoLancamento = descricao,
-                    Valor = item.Valor,
-                    Data = item.Data,
-                    DataCriacao = dataCriacao,
-                    CategoriaGasto = item.CategoriaGasto.HasValue ? (CategoriaGastoEnum)item.CategoriaGasto.Value : null,
-                    StatusTransacao = MidasApi.Models.Enuns.StatusTransacao.Confirmada,
-                });
+                    if (string.IsNullOrWhiteSpace(item.DescricaoLancamento))
+                        continue;
+
+                    var descricao = item.DescricaoLancamento;
+                    if (descricao.Length > 120)
+                        descricao = descricao[..120];
+
+                    var tipo = item.TipoLancamento == 0 ? TipoLancamentoEnum.Receita : TipoLancamentoEnum.Despesa;
+
+                    entidades.Add(new Lancamento
+                    {
+                        IdUsuario = idUsuario,
+                        TipoLancamento = tipo,
+                        DescricaoLancamento = descricao,
+                        Valor = item.Valor,
+                        Data = item.Data,
+                        DataCriacao = dataCriacao,
+                        CategoriaGasto = item.CategoriaGasto.HasValue ? (CategoriaGastoEnum)item.CategoriaGasto.Value : null,
+                        StatusTransacao = MidasApi.Models.Enuns.StatusTransacao.Confirmada,
+                    });
+                }
+
+                if (entidades.Count == 0)
+                    return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento válido para importar." });
+
+                _context.Lancamentos.AddRange(entidades);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { importados = entidades.Count });
             }
-
-            if (entidades.Count == 0)
-                return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento válido para importar." });
-
-            _context.Lancamentos.AddRange(entidades);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { importados = entidades.Count });
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"[ERRO Importar] {ex.GetType().Name}: {ex.Message}");
+                System.Console.WriteLine(ex.StackTrace);
+                if (ex.InnerException != null)
+                {
+                    System.Console.WriteLine($"[ERRO InnerException] {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                }
+                return StatusCode(500, new { importados = 0, mensagem = ex.Message, detalhe = ex.InnerException?.Message });
+            }
         }
 
         // Comparação (maior que valor informado)
