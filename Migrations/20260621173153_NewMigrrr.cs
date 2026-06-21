@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjetoMidasAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class NewMigrrr : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -100,7 +100,8 @@ namespace ProjetoMidasAPI.Migrations
                     tarifasEmprestimo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Data = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataCriacaoSE = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UsuarioResponsavel = table.Column<int>(type: "int", nullable: true)
+                    UsuarioResponsavel = table.Column<int>(type: "int", nullable: true),
+                    CategoriaGasto = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -124,7 +125,8 @@ namespace ProjetoMidasAPI.Migrations
                     ValorPrevisto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DataReferencia = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UsuarioResponsavel = table.Column<int>(type: "int", nullable: true)
+                    UsuarioResponsavel = table.Column<int>(type: "int", nullable: true),
+                    CategoriaGasto = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -185,9 +187,10 @@ namespace ProjetoMidasAPI.Migrations
                     OrigemLancamento = table.Column<int>(type: "int", nullable: true),
                     FrequenciaRecorrencia = table.Column<int>(type: "int", nullable: true),
                     ModoRecorrenciaMensal = table.Column<int>(type: "int", nullable: true),
+                    CategoriaGasto = table.Column<int>(type: "int", nullable: true),
                     StatusTransacao = table.Column<int>(type: "int", nullable: true),
                     QtdeRecorrencia = table.Column<int>(type: "int", nullable: true),
-                    DescricaoLancamento = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    DescricaoLancamento = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ObservacaoLancamento = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Data = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -234,7 +237,7 @@ namespace ProjetoMidasAPI.Migrations
             migrationBuilder.InsertData(
                 table: "Usuarios",
                 columns: new[] { "IdUsuario", "IdEmpresa", "PasswordHash", "PasswordSalt", "Perfil", "TipoUsuario", "emailUsuario", "nomeUsuario", "sobrenome", "telefone" },
-                values: new object[] { 1, 0, new byte[] { 28, 28, 175, 250, 49, 154, 169, 106, 143, 219, 30, 202, 167, 87, 205, 76, 201, 181, 230, 67, 245, 50, 111, 213, 174, 250, 73, 93, 54, 116, 11, 211, 64, 217, 153, 25, 121, 75, 76, 3, 2, 165, 216, 243, 20, 218, 209, 199, 42, 16, 51, 36, 195, 144, 41, 146, 28, 57, 237, 122, 228, 137, 248, 150 }, new byte[] { 245, 192, 126, 163, 9, 179, 22, 69, 218, 86, 125, 147, 163, 40, 199, 70, 108, 32, 178, 238, 136, 232, 181, 35, 173, 133, 125, 75, 173, 23, 197, 40, 238, 234, 85, 43, 233, 182, 235, 51, 67, 65, 161, 84, 152, 35, 180, 13, 215, 141, 117, 206, 229, 162, 225, 241, 244, 147, 81, 163, 131, 210, 103, 5, 248, 53, 16, 71, 39, 138, 140, 185, 125, 149, 153, 57, 143, 170, 234, 146, 65, 183, 130, 183, 63, 37, 100, 45, 68, 94, 3, 226, 117, 106, 94, 131, 157, 162, 100, 247, 240, 175, 94, 205, 93, 0, 14, 55, 81, 147, 83, 139, 205, 251, 188, 92, 121, 9, 202, 49, 246, 4, 16, 47, 201, 208, 130, 61 }, "Administrador", 7, "", "Admin", "", "" });
+                values: new object[] { 1, 0, new byte[] { 229, 210, 191, 104, 74, 144, 154, 164, 1, 138, 70, 184, 169, 194, 204, 54, 237, 84, 254, 69, 151, 253, 236, 78, 165, 250, 136, 143, 142, 235, 164, 130, 102, 90, 203, 120, 79, 206, 57, 61, 194, 119, 207, 83, 4, 88, 62, 227, 82, 143, 138, 240, 171, 90, 184, 65, 35, 43, 62, 91, 195, 186, 136, 227 }, new byte[] { 133, 150, 240, 118, 51, 92, 188, 150, 165, 147, 35, 230, 110, 8, 92, 191, 4, 86, 8, 12, 129, 244, 39, 175, 182, 203, 98, 74, 132, 183, 43, 207, 7, 216, 177, 5, 117, 6, 241, 53, 94, 166, 168, 132, 82, 249, 227, 253, 22, 157, 122, 107, 15, 182, 186, 196, 234, 42, 197, 199, 186, 251, 167, 0, 57, 236, 177, 29, 183, 234, 106, 112, 120, 55, 186, 81, 128, 31, 198, 39, 193, 70, 121, 134, 49, 240, 51, 149, 129, 183, 202, 76, 95, 112, 220, 70, 26, 188, 178, 157, 203, 26, 156, 20, 138, 122, 227, 220, 142, 238, 3, 78, 139, 200, 219, 153, 133, 123, 35, 68, 74, 70, 79, 33, 173, 90, 244, 198 }, "Administrador", 7, "", "Admin", "", "" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Emprestimos_IdUsuario",

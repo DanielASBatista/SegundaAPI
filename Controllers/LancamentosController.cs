@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoMidasAPI.Data;
@@ -33,7 +33,7 @@ namespace ProjetoMidasAPI.Controllers
             return user?.IdEmpresa > 0 ? user.IdEmpresa : null;
         }
 
-        // READ - Lista todos os lançamentos (DEBUG: ignorando filtro)
+        // READ - Lista todos os lanÃ§amentos (DEBUG: ignorando filtro)
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetAll()
         {
@@ -61,7 +61,7 @@ namespace ProjetoMidasAPI.Controllers
             return lancamento == null ? NotFound() : lancamento;
         }
 
-        // CREATE - Adiciona novo lançamento
+        // CREATE - Adiciona novo lanÃ§amento
         [HttpPost("New")]
         public async Task<ActionResult<List<Lancamento>>> Post(NovoLancamentoDto novoLancamento)
         
@@ -71,12 +71,12 @@ namespace ProjetoMidasAPI.Controllers
             var lancamentosCriados = await _lancamentosService.Post(novoLancamento, idUsuario);
 
             if (lancamentosCriados == null || lancamentosCriados.Count == 0)
-                return BadRequest("Não foi possível criar o lançamento.");  
+                return BadRequest("NÃ£o foi possÃ­vel criar o lanÃ§amento.");  
 
             return CreatedAtAction(nameof(GetById), new { id = lancamentosCriados.First().IdLancamento }, lancamentosCriados);
         }
 
-        // UPDATE (parcial) - Atualiza campos específicos do lançamento
+        // UPDATE (parcial) - Atualiza campos especÃ­ficos do lanÃ§amento
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(int id, [FromBody] ProjetoMidasAPI.Dtos.Lancamentos.PatchLancamentoDto patch)
         {
@@ -109,8 +109,8 @@ namespace ProjetoMidasAPI.Controllers
                 lancamento.CategoriaGasto = (CategoriaGastoEnum)patch.CategoriaGasto.Value;
             else if (patch.CategoriaGasto == null && patch.GetType().GetProperty(nameof(patch.CategoriaGasto))?.GetValue(patch) == null)
             {
-                // null = não alterar, mas se explicitamente null, quer remover
-                // (PatchLancamentoDto usa Nullable<int?>, então null padrão = não alterar)
+                // null = nÃ£o alterar, mas se explicitamente null, quer remover
+                // (PatchLancamentoDto usa Nullable<int?>, entÃ£o null padrÃ£o = nÃ£o alterar)
             }
 
             if (patch.ObservacaoLancamento != null)
@@ -121,7 +121,7 @@ namespace ProjetoMidasAPI.Controllers
             return NoContent();
         }
 
-        // UPDATE - Atualiza lançamento existente (completo)
+        // UPDATE - Atualiza lanÃ§amento existente (completo)
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, Lancamento lancamento)
         {
@@ -149,7 +149,7 @@ namespace ProjetoMidasAPI.Controllers
             return NoContent();
         }
 
-        // DELETE - Remove lançamento
+        // DELETE - Remove lanÃ§amento
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -216,7 +216,7 @@ namespace ProjetoMidasAPI.Controllers
                 .ToListAsync();
         }
 
-        // Busca por Ano/Mês    
+        // Busca por Ano/MÃªs    
         [HttpGet("mes/{ano}/{mes}")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetByMes(int ano, int mes)
         {
@@ -229,7 +229,7 @@ namespace ProjetoMidasAPI.Controllers
                 .ToListAsync();
         }
 
-        // Busca por Ano/Mês/Dia    
+        // Busca por Ano/MÃªs/Dia    
         [HttpGet("dia/{ano}/{mes}/{dia}")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetByDia(int ano, int mes, int dia)
         {
@@ -243,7 +243,7 @@ namespace ProjetoMidasAPI.Controllers
                 .ToListAsync();
         }
 
-        // Somatória de valores (com receitas/despesas/saldo)
+        // SomatÃ³ria de valores (com receitas/despesas/saldo)
         [HttpGet("somatoria")]
         public async Task<ActionResult<object>> GetSomatoria()
         {
@@ -268,7 +268,7 @@ namespace ProjetoMidasAPI.Controllers
             });
         }
 
-        // READ - Lista todos os lançamentos da empresa (exclui lançamentos de Admins)
+        // READ - Lista todos os lanÃ§amentos da empresa (exclui lanÃ§amentos de Admins)
         [HttpGet("Empresa")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetAllEmpresa()
         {
@@ -289,7 +289,7 @@ namespace ProjetoMidasAPI.Controllers
                 .ToListAsync();
         }
 
-        // READ - Somatória de valores da empresa (exclui Admins)
+        // READ - SomatÃ³ria de valores da empresa (exclui Admins)
         [HttpGet("Empresa/Somatoria")]
         public async Task<ActionResult<object>> GetSomatoriaEmpresa()
         {
@@ -324,14 +324,14 @@ namespace ProjetoMidasAPI.Controllers
             });
         }
 
-        // IMPORTAR EM LOTE - Recebe array de lançamentos e salva todos
+        // IMPORTAR EM LOTE - Recebe array de lanÃ§amentos e salva todos
         [HttpPost("Importar")]
         public async Task<ActionResult<object>> Importar([FromBody] ImportarLancamentoRequestDto request)
         {
             try
             {
                 if (request == null || request.Lancamentos == null || request.Lancamentos.Count == 0)
-                    return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento para importar." });
+                    return BadRequest(new { importados = 0, mensagem = "Nenhum lanÃ§amento para importar." });
 
                 var idUsuario = GetUserId();
                 var dataCriacao = DateTime.UtcNow;
@@ -345,8 +345,8 @@ namespace ProjetoMidasAPI.Controllers
                         continue;
 
                     var descricao = item.DescricaoLancamento;
-                    if (descricao.Length > 120)
-                        descricao = descricao[..120];
+                    if (descricao.Length > 50)
+                        descricao = descricao[..50];
 
                     var tipo = item.TipoLancamento == 0 ? TipoLancamentoEnum.Receita : TipoLancamentoEnum.Despesa;
 
@@ -364,7 +364,7 @@ namespace ProjetoMidasAPI.Controllers
                 }
 
                 if (entidades.Count == 0)
-                    return BadRequest(new { importados = 0, mensagem = "Nenhum lançamento válido para importar." });
+                    return BadRequest(new { importados = 0, mensagem = "Nenhum lanÃ§amento vÃ¡lido para importar." });
 
                 _context.Lancamentos.AddRange(entidades);
                 await _context.SaveChangesAsync();
@@ -383,7 +383,7 @@ namespace ProjetoMidasAPI.Controllers
             }
         }
 
-        // Comparação (maior que valor informado)
+        // ComparaÃ§Ã£o (maior que valor informado)
         [HttpGet("comparacao/{valor}")]
         public async Task<ActionResult<IEnumerable<Lancamento>>> GetComparacao(decimal valor)
         {
