@@ -342,6 +342,36 @@ namespace ProjetoMidasAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Desvincula um usuário da empresa (em vez de deletar a conta)
+        /// </summary>
+        [HttpDelete("Empresa/{id}")]
+        public async Task<IActionResult> RemoverDaEmpresa(int id)
+        {
+            var usuarioLogado = await GetUsuarioLogado();
+            if (usuarioLogado == null)
+                return Unauthorized();
+
+            if (!IsAdminEmpresa(usuarioLogado))
+                return Forbid();
+
+            var usuario = await _context.Set<Usuario>().FindAsync(id);
+            if (usuario == null)
+                return NotFound();
+
+            if (usuario.IdEmpresa != usuarioLogado.IdEmpresa)
+                return Forbid();
+
+            if (usuario.IdUsuario == usuarioLogado.IdUsuario)
+                return BadRequest(new { mensagem = "Você não pode remover a si mesmo da empresa." });
+
+            // Desvincula da empresa mas não deleta a conta
+            usuario.IdEmpresa = 0;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuario(int id)
         {
